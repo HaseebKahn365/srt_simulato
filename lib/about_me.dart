@@ -2,6 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:simple_icons/simple_icons.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class AboutMe extends StatelessWidget {
   const AboutMe({super.key});
@@ -47,15 +49,7 @@ class AboutMe extends StatelessWidget {
 
                   onTap: () {
                     const email = 'haseebkahn365@gmail.com';
-                    Clipboard.setData(ClipboardData(text: email));
-
-                    //show snackbar at the top
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text("Email Copied to Clipboard"),
-                        backgroundColor: Colors.green,
-                      ),
-                    );
+                    launch("mailto:$email");
                   },
                   leading: Icon(Icons.email),
                   title: Text("Email"),
@@ -65,16 +59,10 @@ class AboutMe extends StatelessWidget {
               Card(
                 child: ListTile(
                   onTap: () {
-                    const phone = '+03491777261';
-                    Clipboard.setData(ClipboardData(text: phone));
+                    const phone = '03491777261';
+                    launch("tel://$phone");
 
                     //show snackbar at the top
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text("Phone Number Copied to Clipboard"),
-                        backgroundColor: Colors.green,
-                      ),
-                    );
                   },
                   leading: Icon(Icons.phone),
                   title: Text("Phone"),
@@ -126,7 +114,35 @@ class AboutMe extends StatelessWidget {
                       //shortest remaining time algrorithm
                       "This project is a simple implementation of shortest remaining time algrorithm. \nIt is a preemptive scheduling algorithm in which the process with the smallest amount of time remaining until completion is selected to execute. Since the currently executing process is the one with the shortest amount of time remaining by definition, and since that time should only reduce as execution progresses, processes will always run until they complete or a new process is added that requires a smaller amount of time. The result of this algorithm is that short processes are favored as they have smaller execution time whereas long processes may be blocked indefinitely since the shortest process will always be selected to execute first."),
                 ),
-              )
+              ),
+              //create an elevated button with url launcher to launch my github profile
+              Padding(
+                padding: const EdgeInsets.all(15.0),
+                //create an elevated button with icon and text
+                child: Padding(
+                  padding: const EdgeInsets.all(30.0),
+                  child: Container(
+                    height: 70,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        //launch the url: https://github.com/HaseebKahn365/srt_simulato
+                        final Uri _url = Uri.parse(
+                            'https://github.com/HaseebKahn365/srt_simulato');
+                        launch(_url.toString());
+                      },
+                      //use simple icons
+                      icon: Icon(SimpleIcons.github),
+                      label: Text("Source Code"),
+                      style: ElevatedButton.styleFrom(
+                        elevation: 20,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(50),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
