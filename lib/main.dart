@@ -160,6 +160,37 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Timer? timer;
 
+  //run the cpu cycle after every second until the list of active processes is empty using timer and also adjust the positions of the processes after every cycle.
+  void runCycle() {
+    timer = Timer.periodic(Duration(seconds: 1), (t) {
+      setState(() {
+        //check if the list of active processes is not empty
+        if (activeProcesses.isNotEmpty) {
+          //for each process in the active processes list where the isExecuting is true. Then call its reduceBurst().
+          for (int i = 0; i < activeProcesses.length; i++) {
+            if (activeProcesses[i].isExecuting) {
+              activeProcesses[i].reduceBurst();
+            }
+          }
+          //adjust the positions of the processes
+          adjustPositions();
+          //increment the system clock
+          systemClock++;
+        }
+      });
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    startCpuCycle();
+  }
+
+  void startCpuCycle() {
+    runCycle();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -190,11 +221,67 @@ class _HomeScreenState extends State<HomeScreen> {
       body: Column(
         children: [
           //here now we will define the boxes for processor which will be in the top centre.
-          Align(alignment: Alignment.topCenter, child: Processor()),
+          Align(
+            alignment: Alignment.topCenter,
+            child: Container(
+              height: 160,
+              width: 270,
+              //rounded outlined borders
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  // Border color
+                  width: 1.0, // Border width
+                ),
+                borderRadius: BorderRadius.circular(12.0), // Border radius
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Align(
+                    alignment: Alignment.topCenter,
+                    child: Text("Processor"),
+                  ),
+                  //display the system clock
+                  Align(
+                    alignment: Alignment.topCenter,
+                    child: Text("System Clock: $systemClock"),
+                  ),
+                  Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Text("Active Process:"),
+                            Container(
+                              //this is the container for the active process
+                              width: 100,
+                              height: 100,
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant,
+                                  // Border color
+                                  width: 1.0, // Border width
+                                ),
+                                borderRadius: BorderRadius.circular(
+                                    12.0), // Border radius
+                              ),
+                            )
+                          ]),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
           // the following box the list of active processes below the processor
           ActiveProcesses(),
 
-          //the horizontal wide box for the temporary created processes conatining an add button and  listView with horizontal scroll direction
+//? this is the box for list of temporarily created processes
           Container(
             height: 120,
             width: 300,
@@ -272,22 +359,29 @@ class _HomeScreenState extends State<HomeScreen> {
             padding: const EdgeInsets.only(top: 30.0, left: 30),
             child: Align(
               alignment: Alignment.bottomLeft,
-              child: SizedBox(
+              child: Container(
                 height: 130,
                 width: 130,
-                child: Card(
-                    elevation: 0.4,
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    // Border color
+                    width: 1.0, // Border width
+                  ),
 
-                    //here we will display the pid and the burst time of the new process using a column wiget in case if the burst time is not 0
-                    child: newProcess.remainingBurst != 0
-                        ? Column(
+                  borderRadius: BorderRadius.circular(12.0), // Border radius
+                ),
+                child:
+                    //check if the burst is 0 then don't display anything
+                    newProcess.remainingBurst == 0
+                        ? Container()
+                        : Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text("PID: ${newProcess.pid}"),
                               Text("Burst: ${newProcess.remainingBurst}"),
                             ],
-                          )
-                        : null),
+                          ),
               ),
             ),
           ),
@@ -300,7 +394,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: GestureDetector(
           onLongPressStart: (details) {
             // Start a timer that increments the remainingBurst time of the new process every second.
-            timer = Timer.periodic(Duration(milliseconds: 500), (t) {
+            timer = Timer.periodic(Duration(milliseconds: 300), (t) {
               setState(() {
                 newProcess.remainingBurst++;
                 print(newProcess.remainingBurst);

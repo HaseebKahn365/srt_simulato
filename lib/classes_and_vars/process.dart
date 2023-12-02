@@ -12,6 +12,7 @@ class Process {
       required this.isExecuting});
   void reduceBurst() {
     this.remainingBurst--;
+    adjustPositions();
   }
   //override the toString method to print the process object in a readable way
 
