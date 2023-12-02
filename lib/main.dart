@@ -53,7 +53,7 @@ void main() {
 }
 
 class SRTSimulator extends StatefulWidget {
-  const SRTSimulator({super.key});
+  const SRTSimulator({Key? key}) : super(key: key);
 
   @override
   State<SRTSimulator> createState() => _SRTSimulatorState();
@@ -91,13 +91,6 @@ class _SRTSimulatorState extends State<SRTSimulator> {
 
   late ThemeData themeData;
 
-  //local variables for the new Process box
-
-  Process newProcess = Process(
-      arrival: 0, remainingBurst: 0, position: 0, pid: 0, isExecuting: false);
-
-  Timer? timer;
-
   @override
   initState() {
     super.initState();
@@ -106,11 +99,10 @@ class _SRTSimulatorState extends State<SRTSimulator> {
 
   ThemeData updateThemes(int colorIndex, bool useMaterial3, bool useLightMode) {
     return ThemeData(
-        // make the new Product Sans font the default font
-        fontFamily: 'Product Sans',
-        colorSchemeSeed: colorOptions[colorSelected],
-        useMaterial3: useMaterial3,
-        brightness: useLightMode ? Brightness.light : Brightness.dark);
+      colorSchemeSeed: colorOptions[colorSelected],
+      useMaterial3: useMaterial3,
+      brightness: useLightMode ? Brightness.light : Brightness.dark,
+    );
   }
 
   void handleScreenChanged(int selectedScreen) {
@@ -140,107 +132,211 @@ class _SRTSimulatorState extends State<SRTSimulator> {
       title: 'SRT Simulator',
       themeMode: useLightMode ? ThemeMode.light : ThemeMode.dark,
       theme: themeData,
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('SRT Simulator'),
-          //add an action to toggle the theme
-          actions: <Widget>[
-            IconButton(
-              icon: Icon(useLightMode ? Icons.dark_mode : Icons.light_mode),
-              onPressed: handleBrightnessChange,
-            ),
-            //add an outline action button with text for reset everything. for now it will do nothing
-            Container(
-              padding: EdgeInsets.only(right: 8),
-              height: 30,
-              child: OutlinedButton(
-                onPressed: () {},
-                child: const Text('Reset'),
-              ),
-            ),
-          ],
-        ),
-        body: Column(
-          children: [
-            //here now we will define the boxes for processor which will be in the top centre.
-            Align(alignment: Alignment.topCenter, child: Processor()),
-            // the following box the list of active processes below the processor
-            ActiveProcesses(),
+      home: HomeScreen(
+        useLightMode: useLightMode,
+        handleBrightnessChange: handleBrightnessChange,
+      ),
+    );
+  }
+}
 
-            //the horizontal wide box for the temporary created processes conatining an add button and  listView with horizontal scroll direction
-            TempCreatedProcesses(),
+class HomeScreen extends StatefulWidget {
+  final bool useLightMode;
+  final VoidCallback handleBrightnessChange;
 
-            //the square box alligned at the bottom left corner for the new process being created.
-            Padding(
-              padding: const EdgeInsets.only(top: 30.0, left: 30),
-              child: Align(
-                alignment: Alignment.bottomLeft,
-                child: SizedBox(
-                  height: 130,
-                  width: 130,
-                  child: Card(
-                      elevation: 0.4,
+  const HomeScreen({
+    Key? key,
+    required this.useLightMode,
+    required this.handleBrightnessChange,
+  }) : super(key: key);
 
-                      //here we will display the pid and the burst time of the new process using a column wiget in case if the burst time is not 0
-                      child: newProcess.remainingBurst != 0
-                          ? Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text("PID: ${newProcess.pid}"),
-                                Text("Burst: ${newProcess.remainingBurst}"),
-                              ],
-                            )
-                          : null),
-                ),
-              ),
-            ),
-          ],
-        ),
-        //create a custom floating action button for creating new processes. when i press and hold it, it should increase the remaining burst of the new process by 1 second. when i release it, it should add the process to the list of temporary processes.
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
 
-        floatingActionButton: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: GestureDetector(
-            onLongPressStart: (details) {
-              // Start a timer that increments the remainingBurst time of the new process every second.
-              timer = Timer.periodic(Duration(milliseconds: 500), (t) {
+class _HomeScreenState extends State<HomeScreen> {
+  Process newProcess = Process(
+      arrival: 0, remainingBurst: 0, position: 0, pid: 0, isExecuting: false);
+
+  Timer? timer;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('SRT Simulator'),
+        //add an action to toggle the theme
+        actions: <Widget>[
+          IconButton(
+            icon:
+                Icon(widget.useLightMode ? Icons.dark_mode : Icons.light_mode),
+            onPressed: widget.handleBrightnessChange,
+          ),
+          //add an outline action button with text for reset everything. for now it will do nothing
+          Container(
+            padding: EdgeInsets.only(right: 8),
+            height: 30,
+            child: OutlinedButton(
+              onPressed: () {
                 setState(() {
-                  newProcess.remainingBurst++;
-                  print(newProcess.remainingBurst);
+                  resetAll();
                 });
-              });
-            },
-            onLongPressEnd: (details) {
-              // Cancel the timer when the long press ends.
-              timer?.cancel();
-              // Add the new process to the list of temporary processes.
-              setState(() {
-                newProcess.pid = processCounter;
-                tempCreated.add(newProcess);
-                processCounter++;
-                newProcess = Process(
-                    arrival: 0,
-                    remainingBurst: 0,
-                    position: 0,
-                    pid: 0,
-                    isExecuting: false);
-              });
-              print(tempCreated);
-            },
-            child: Container(
-              height: 60,
-              child: ElevatedButton(
-                onPressed: () {},
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text("Create Process"),
-                ),
-                style: ElevatedButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.0),
+              },
+              child: const Text('Reset'),
+            ),
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          //here now we will define the boxes for processor which will be in the top centre.
+          Align(alignment: Alignment.topCenter, child: Processor()),
+          // the following box the list of active processes below the processor
+          ActiveProcesses(),
+
+          //the horizontal wide box for the temporary created processes conatining an add button and  listView with horizontal scroll direction
+          Container(
+            height: 120,
+            width: 300,
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                // Border color
+                width: 1.0, // Border width
+              ),
+              borderRadius: BorderRadius.circular(12.0), // Border radius
+            ),
+            child: Row(
+              children: [
+                //an outline icon buttonn with arrow up
+                OutlinedButton(
+                    onPressed: () {
+                      setState(() {
+                        feedToProcessor();
+                        adjustPositions();
+                        //clear the tempCreated list
+                        tempCreated = [];
+                      });
+                    },
+                    child: Icon(Icons.arrow_upward_rounded),
+                    style: OutlinedButton.styleFrom(
+                      shape: CircleBorder(),
+                      padding: EdgeInsets.all(8),
+                    )),
+                //the list view with horizontal scroll direction
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ListView.builder(
+                      //displaying the list of temporary processes
+                      itemCount: tempCreated.length,
+                      scrollDirection: Axis.horizontal,
+                      itemBuilder: (BuildContext context, int index) {
+                        return Padding(
+                          padding: const EdgeInsets.all(2.0),
+                          child: Container(
+                              width: 100,
+                              height: 100,
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant,
+                                  // Border color
+                                  width: 1.0, // Border width
+                                ),
+                                borderRadius: BorderRadius.circular(
+                                    12.0), // Border radius
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text("PID: ${tempCreated[index].pid}"),
+                                  Text(
+                                      "Burst: ${tempCreated[index].remainingBurst}"),
+                                ],
+                              )),
+                        );
+                      },
+                    ),
                   ),
-                  padding: EdgeInsets.all(8),
+                )
+              ],
+            ),
+          ),
+
+          //the square box alligned at the bottom left corner for the new process being created.
+
+          //? this is the box for the new process being created
+          Padding(
+            padding: const EdgeInsets.only(top: 30.0, left: 30),
+            child: Align(
+              alignment: Alignment.bottomLeft,
+              child: SizedBox(
+                height: 130,
+                width: 130,
+                child: Card(
+                    elevation: 0.4,
+
+                    //here we will display the pid and the burst time of the new process using a column wiget in case if the burst time is not 0
+                    child: newProcess.remainingBurst != 0
+                        ? Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text("PID: ${newProcess.pid}"),
+                              Text("Burst: ${newProcess.remainingBurst}"),
+                            ],
+                          )
+                        : null),
+              ),
+            ),
+          ),
+        ],
+      ),
+      //create a custom floating action button for creating new processes. when i press and hold it, it should increase the remaining burst of the new process by 1 second. when i release it, it should add the process to the list of temporary processes.
+
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: GestureDetector(
+          onLongPressStart: (details) {
+            // Start a timer that increments the remainingBurst time of the new process every second.
+            timer = Timer.periodic(Duration(milliseconds: 500), (t) {
+              setState(() {
+                newProcess.remainingBurst++;
+                print(newProcess.remainingBurst);
+              });
+            });
+          },
+          onLongPressEnd: (details) {
+            // Cancel the timer when the long press ends.
+            timer?.cancel();
+            // Add the new process to the list of temporary processes.
+            setState(() {
+              newProcess.pid = processCounter;
+              tempCreated.add(newProcess);
+              processCounter++;
+              newProcess = Process(
+                  arrival: 0,
+                  remainingBurst: 0,
+                  position: 0,
+                  pid: 0,
+                  isExecuting: false);
+            });
+            print(tempCreated);
+          },
+          child: Container(
+            height: 60,
+            child: ElevatedButton(
+              onPressed: () {},
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text("Create Process"),
+              ),
+              style: ElevatedButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.0),
                 ),
+                padding: EdgeInsets.all(8),
               ),
             ),
           ),
@@ -249,6 +345,8 @@ class _SRTSimulatorState extends State<SRTSimulator> {
     );
   }
 }
+
+//! below are the unused widgets
 
 class newProcessBox extends StatelessWidget {
   const newProcessBox({
@@ -274,88 +372,6 @@ class newProcessBox extends StatelessWidget {
             borderRadius: BorderRadius.circular(12.0), // Border radius
           ),
         ),
-      ),
-    );
-  }
-}
-
-class TempCreatedProcesses extends StatefulWidget {
-  const TempCreatedProcesses({
-    super.key,
-  });
-
-  @override
-  State<TempCreatedProcesses> createState() => _TempCreatedProcessesState();
-}
-
-class _TempCreatedProcessesState extends State<TempCreatedProcesses> {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 120,
-      width: 300,
-      decoration: BoxDecoration(
-        border: Border.all(
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
-          // Border color
-          width: 1.0, // Border width
-        ),
-        borderRadius: BorderRadius.circular(12.0), // Border radius
-      ),
-      child: Row(
-        children: [
-          //an outline icon buttonn with arrow up
-          OutlinedButton(
-              onPressed: () {
-                setState(() {
-                  feedToProcessor();
-                  adjustPositions();
-                  //clear the tempCreated list
-                  tempCreated = [];
-                });
-              },
-              child: Icon(Icons.arrow_upward_rounded),
-              style: OutlinedButton.styleFrom(
-                shape: CircleBorder(),
-                padding: EdgeInsets.all(8),
-              )),
-          //the list view with horizontal scroll direction
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: ListView.builder(
-                //displaying the list of temporary processes
-                itemCount: tempCreated.length,
-                scrollDirection: Axis.horizontal,
-                itemBuilder: (BuildContext context, int index) {
-                  return Padding(
-                    padding: const EdgeInsets.all(2.0),
-                    child: Container(
-                        width: 100,
-                        height: 100,
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color:
-                                Theme.of(context).colorScheme.onSurfaceVariant,
-                            // Border color
-                            width: 1.0, // Border width
-                          ),
-                          borderRadius:
-                              BorderRadius.circular(12.0), // Border radius
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text("PID: ${tempCreated[index].pid}"),
-                            Text("Burst: ${tempCreated[index].remainingBurst}"),
-                          ],
-                        )),
-                  );
-                },
-              ),
-            ),
-          )
-        ],
       ),
     );
   }
