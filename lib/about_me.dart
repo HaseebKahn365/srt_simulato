@@ -1,21 +1,9 @@
-import 'package:enhanced_url_launcher/enhanced_url_launcher.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:simple_icons/simple_icons.dart';
 
 class AboutMe extends StatelessWidget {
   const AboutMe({super.key});
-
-  Future<void> launchUrlAny(
-    String _url,
-  ) async {
-    if (!await launchUrl(Uri.parse(_url))) {
-      //then just copy to the clipbaord using services
-      Clipboard.setData(ClipboardData(text: _url));
-
-      throw Exception('Could not launch $_url');
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +47,7 @@ class AboutMe extends StatelessWidget {
                   onTap: () {
                     const email = 'haseebkahn365@gmail.com';
                     //using the enhanced url launcher package
-                    launchUrlAny(email);
+                    Clipboard.setData(ClipboardData(text: email));
                   },
                   leading: const Icon(Icons.email),
                   title: const Text("Email"),
@@ -69,9 +57,8 @@ class AboutMe extends StatelessWidget {
               Card(
                 child: ListTile(
                   onTap: () {
-                    const phone = '+03491777261';
-                    //using the enhanced url launcher package
-                    launchUrlAny(phone);
+                    const phone = '03491777261';
+                    Clipboard.setData(ClipboardData(text: phone));
                   },
                   leading: const Icon(Icons.phone),
                   title: const Text("Phone"),
@@ -135,8 +122,11 @@ class AboutMe extends StatelessWidget {
                     child: ElevatedButton.icon(
                       onPressed: () {
                         //launch the url: https://github.com/HaseebKahn365/srt_simulato
-                        launchUrlAny(
-                            "https://github.com/HaseebKahn365/srt_simulato");
+                        const link =
+                            "https://github.com/HaseebKahn365/srt_simulato";
+                        Clipboard.setData(
+                          ClipboardData(text: link),
+                        );
                       },
                       //use simple icons
                       icon: const Icon(SimpleIcons.github),
