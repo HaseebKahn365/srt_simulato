@@ -159,25 +159,26 @@ class _HomeScreenState extends State<HomeScreen> {
       arrival: 0, remainingBurst: 0, position: 0, pid: 0, isExecuting: false);
 
   Timer? timer;
+  Timer? newtimer;
 
   //run the cpu cycle after every second until the list of active processes is empty using timer and also adjust the positions of the processes after every cycle.
   void runCycle() {
-    timer = Timer.periodic(Duration(seconds: 1), (t) {
-      setState(() {
-        //check if the list of active processes is not empty
-        if (activeProcesses.isNotEmpty) {
-          //for each process in the active processes list where the isExecuting is true. Then call its reduceBurst().
-          for (int i = 0; i < activeProcesses.length; i++) {
-            if (activeProcesses[i].isExecuting) {
-              activeProcesses[i].reduceBurst();
-            }
-          }
-          //adjust the positions of the processes
-          adjustPositions();
-          //increment the system clock
+    newtimer = Timer.periodic(Duration(seconds: 1), (t) {
+      try {
+        setState(() {
           systemClock++;
-        }
-      });
+          if (activeProcesses.isNotEmpty) {
+            for (int i = 0; i < activeProcesses.length; i++) {
+              if (activeProcesses[i].isExecuting) {
+                activeProcesses[i].reduceBurst();
+              }
+            }
+            adjustPositions();
+          }
+        });
+      } catch (e) {
+        print('An error occurred: $e');
+      }
     });
   }
 
