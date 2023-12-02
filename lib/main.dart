@@ -1,6 +1,9 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:srt_simulato/classes_and_vars/process.dart';
 
 /*SJF(shortest job first) preemptive (Shortest Remaining Time) app using flutter
 Defining problem: 
@@ -88,6 +91,13 @@ class _SRTSimulatorState extends State<SRTSimulator> {
 
   late ThemeData themeData;
 
+  //local variables for the new Process box
+
+  Process newProcess = Process(
+      arrival: 0, remainingBurst: 0, position: 0, pid: 0, isExecuting: false);
+
+  Timer? timer;
+
   @override
   initState() {
     super.initState();
@@ -125,7 +135,6 @@ class _SRTSimulatorState extends State<SRTSimulator> {
 
   @override
   Widget build(BuildContext context) {
-    //I want the boyinspace.jpg to be the background image
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'SRT Simulator',
@@ -142,6 +151,7 @@ class _SRTSimulatorState extends State<SRTSimulator> {
             ),
             //add an outline action button with text for reset everything. for now it will do nothing
             Container(
+              padding: EdgeInsets.only(right: 8),
               height: 30,
               child: OutlinedButton(
                 onPressed: () {},
@@ -152,14 +162,341 @@ class _SRTSimulatorState extends State<SRTSimulator> {
         ),
         body: Column(
           children: [
-            //creating boxes for processor, temp created processes and process creation box.
+            //here now we will define the boxes for processor which will be in the top centre.
+            Align(alignment: Alignment.topCenter, child: Processor()),
+            // the following box the list of active processes below the processor
+            ActiveProcesses(),
 
-            //processor box contains a smaller box that will contain the running process
+            //the horizontal wide box for the temporary created processes conatining an add button and  listView with horizontal scroll direction
+            TempCreatedProcesses(),
+
+            //the square box alligned at the bottom left corner for the new process being created.
+            Padding(
+              padding: const EdgeInsets.only(top: 30.0, left: 30),
+              child: Align(
+                alignment: Alignment.bottomLeft,
+                child: SizedBox(
+                  height: 130,
+                  width: 130,
+                  child: Card(
+                      elevation: 0.4,
+
+                      //here we will display the pid and the burst time of the new process using a column wiget in case if the burst time is not 0
+                      child: newProcess.remainingBurst != 0
+                          ? Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text("PID: ${newProcess.pid}"),
+                                Text("Burst: ${newProcess.remainingBurst}"),
+                              ],
+                            )
+                          : null),
+                ),
+              ),
+            ),
           ],
         ),
-      ),
+        //create a custom floating action button for creating new processes. when i press and hold it, it should increase the remaining burst of the new process by 1 second. when i release it, it should add the process to the list of temporary processes.
 
-      //create a floating actioon button
+        floatingActionButton: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: GestureDetector(
+            onLongPressStart: (details) {
+              // Start a timer that increments the remainingBurst time of the new process every second.
+              timer = Timer.periodic(Duration(milliseconds: 500), (t) {
+                setState(() {
+                  newProcess.remainingBurst++;
+                  print(newProcess.remainingBurst);
+                });
+              });
+            },
+            onLongPressEnd: (details) {
+              // Cancel the timer when the long press ends.
+              timer?.cancel();
+              // Add the new process to the list of temporary processes.
+              setState(() {
+                newProcess.pid = processCounter;
+                tempCreated.add(newProcess);
+                processCounter++;
+                newProcess = Process(
+                    arrival: 0,
+                    remainingBurst: 0,
+                    position: 0,
+                    pid: 0,
+                    isExecuting: false);
+              });
+              print(tempCreated);
+            },
+            child: Container(
+              height: 60,
+              child: ElevatedButton(
+                onPressed: () {},
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text("Create Process"),
+                ),
+                style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.0),
+                  ),
+                  padding: EdgeInsets.all(8),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class newProcessBox extends StatelessWidget {
+  const newProcessBox({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 30.0, left: 30),
+      child: Align(
+        alignment: Alignment.bottomLeft,
+        child: Container(
+          height: 130,
+          width: 130,
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              // Border color
+              width: 1.0, // Border width
+            ),
+
+            borderRadius: BorderRadius.circular(12.0), // Border radius
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class TempCreatedProcesses extends StatefulWidget {
+  const TempCreatedProcesses({
+    super.key,
+  });
+
+  @override
+  State<TempCreatedProcesses> createState() => _TempCreatedProcessesState();
+}
+
+class _TempCreatedProcessesState extends State<TempCreatedProcesses> {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 120,
+      width: 300,
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+          // Border color
+          width: 1.0, // Border width
+        ),
+        borderRadius: BorderRadius.circular(12.0), // Border radius
+      ),
+      child: Row(
+        children: [
+          //an outline icon buttonn with arrow up
+          OutlinedButton(
+              onPressed: () {
+                setState(() {
+                  feedToProcessor();
+                  adjustPositions();
+                  //clear the tempCreated list
+                  tempCreated = [];
+                });
+              },
+              child: Icon(Icons.arrow_upward_rounded),
+              style: OutlinedButton.styleFrom(
+                shape: CircleBorder(),
+                padding: EdgeInsets.all(8),
+              )),
+          //the list view with horizontal scroll direction
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ListView.builder(
+                //displaying the list of temporary processes
+                itemCount: tempCreated.length,
+                scrollDirection: Axis.horizontal,
+                itemBuilder: (BuildContext context, int index) {
+                  return Padding(
+                    padding: const EdgeInsets.all(2.0),
+                    child: Container(
+                        width: 100,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
+                            // Border color
+                            width: 1.0, // Border width
+                          ),
+                          borderRadius:
+                              BorderRadius.circular(12.0), // Border radius
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text("PID: ${tempCreated[index].pid}"),
+                            Text("Burst: ${tempCreated[index].remainingBurst}"),
+                          ],
+                        )),
+                  );
+                },
+              ),
+            ),
+          )
+        ],
+      ),
+    );
+  }
+}
+
+class ActiveProcesses extends StatelessWidget {
+  const ActiveProcesses({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Container(
+        //a vertical box for the list of active processes
+        height: 250,
+        width: 270,
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+            // Border color
+            width: 1.0, // Border width
+          ),
+          borderRadius: BorderRadius.circular(12.0), // Border radius
+        ),
+
+        child: Column(children: [
+          //title ready queue processes
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              children: [
+                Text("Ready Queue"),
+                //create a list view with vertical scroll direction of cards to represent processes.
+                //for now just create 10 cards with height 20
+                Container(
+                  height: 200,
+                  width: 220,
+                  child: ListView.builder(
+                    //displaying the list of activeProcesses
+                    itemCount: activeProcesses.length,
+                    scrollDirection: Axis.vertical,
+                    itemBuilder: (BuildContext context, int index) {
+                      return Padding(
+                        padding: const EdgeInsets.all(2.0),
+                        child: Container(
+                          width: 100,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant,
+                              // Border color
+                              width: 1.0, // Border width
+                            ),
+                            borderRadius:
+                                BorderRadius.circular(12.0), // Border radius
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text("PID: ${activeProcesses[index].pid}"),
+                              Text(
+                                  "Burst: ${activeProcesses[index].remainingBurst}"),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                )
+              ],
+            ),
+          ),
+          //a list of cards for the active processes
+        ]),
+      ),
+    );
+  }
+}
+
+class Processor extends StatelessWidget {
+  const Processor({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 160,
+      width: 270,
+      //rounded outlined borders
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+          // Border color
+          width: 1.0, // Border width
+        ),
+        borderRadius: BorderRadius.circular(12.0), // Border radius
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Align(
+            alignment: Alignment.topCenter,
+            child: Text("Processor"),
+          ),
+          //display the system clock
+          Align(
+            alignment: Alignment.topCenter,
+            child: Text("System Clock: $systemClock"),
+          ),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Text("Active Process:"),
+                    Container(
+                      //this is the container for the active process
+                      width: 100,
+                      height: 100,
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          // Border color
+                          width: 1.0, // Border width
+                        ),
+                        borderRadius:
+                            BorderRadius.circular(12.0), // Border radius
+                      ),
+                    )
+                  ]),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

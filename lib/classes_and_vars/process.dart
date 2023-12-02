@@ -13,6 +13,12 @@ class Process {
   void reduceBurst() {
     this.remainingBurst--;
   }
+  //override the toString method to print the process object in a readable way
+
+  @override
+  String toString() {
+    return "Process ID: ${this.pid} \nArrival Time: ${this.arrival} \nRemaining Burst: ${this.remainingBurst} \nPosition: ${this.position} \nIs Executing: ${this.isExecuting}";
+  }
 }
 
 //Lists of objects:
@@ -26,6 +32,14 @@ List<Process> activeProcesses = [];
 
 int systemClock = 0;
 int processCounter = 0;
+
+//creating a resetAll functioon to reset the global variables and lists
+void resetAll() {
+  tempCreated = [];
+  activeProcesses = [];
+  systemClock = 0;
+  processCounter = 0;
+}
 
 void createProcess() {
   tempCreated.add(Process(
