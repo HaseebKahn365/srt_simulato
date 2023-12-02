@@ -3,7 +3,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:srt_simulato/about_me.dart';
 import 'package:srt_simulato/classes_and_vars/process.dart';
 
 /*SJF(shortest job first) preemptive (Shortest Remaining Time) app using flutter
@@ -200,19 +199,6 @@ class _HomeScreenState extends State<HomeScreen> {
         title: const Text('SRT Simulator'),
         //add an action to toggle the theme
         actions: <Widget>[
-          //icon button with exclamation icon that should should navigate me to the about me page :
-          IconButton(
-            icon: const Icon(Icons.info_outline_rounded),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const AboutMe(),
-                ),
-              );
-            },
-          ),
-
           IconButton(
             icon:
                 Icon(widget.useLightMode ? Icons.dark_mode : Icons.light_mode),

@@ -1,18 +1,27 @@
-// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
-
+import 'package:enhanced_url_launcher/enhanced_url_launcher.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:simple_icons/simple_icons.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class AboutMe extends StatelessWidget {
   const AboutMe({super.key});
+
+  Future<void> launchUrlAny(
+    String _url,
+  ) async {
+    if (!await launchUrl(Uri.parse(_url))) {
+      //then just copy to the clipbaord using services
+      Clipboard.setData(ClipboardData(text: _url));
+
+      throw Exception('Could not launch $_url');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("About Me"),
+        title: const Text("About Me"),
         centerTitle: true,
       ),
       body: Padding(
@@ -21,7 +30,7 @@ class AboutMe extends StatelessWidget {
           child: ListView(
             children: [
               //create a circle avatar to display my image
-              CircleAvatar(
+              const CircleAvatar(
                 radius: 100,
                 backgroundImage: AssetImage(
                   "assets/images/my.JPG",
@@ -29,8 +38,8 @@ class AboutMe extends StatelessWidget {
               ),
 
               //create a text widget to display my name
-              Padding(
-                padding: const EdgeInsets.all(13.0),
+              const Padding(
+                padding: EdgeInsets.all(13.0),
                 child: Text(
                   "Abdul Haseeb",
                   style: TextStyle(
@@ -49,27 +58,27 @@ class AboutMe extends StatelessWidget {
 
                   onTap: () {
                     const email = 'haseebkahn365@gmail.com';
-                    launch("mailto:$email");
+                    //using the enhanced url launcher package
+                    launchUrlAny(email);
                   },
-                  leading: Icon(Icons.email),
-                  title: Text("Email"),
-                  subtitle: Text("haseebkahn365@gmail.com"),
+                  leading: const Icon(Icons.email),
+                  title: const Text("Email"),
+                  subtitle: const Text("haseebkahn365@gmail.com"),
                 ),
               ),
               Card(
                 child: ListTile(
                   onTap: () {
-                    const phone = '03491777261';
-                    launch("tel://$phone");
-
-                    //show snackbar at the top
+                    const phone = '+03491777261';
+                    //using the enhanced url launcher package
+                    launchUrlAny(phone);
                   },
-                  leading: Icon(Icons.phone),
-                  title: Text("Phone"),
-                  subtitle: Text("+03491777261"),
+                  leading: const Icon(Icons.phone),
+                  title: const Text("Phone"),
+                  subtitle: const Text("+03491777261"),
                 ),
               ),
-              Card(
+              const Card(
                 child: ListTile(
                   leading: Icon(Icons.location_on),
                   title: Text("Address"),
@@ -77,35 +86,35 @@ class AboutMe extends StatelessWidget {
                       Text("Kawdari Haji Abad, dist. Mardan, KP Pakistan "),
                 ),
               ),
-              Card(
+              const Card(
                 child: ListTile(
                   leading: Icon(Icons.school),
                   title: Text("Education"),
                   subtitle: Text("BSc. Computer Science"),
                 ),
               ),
-              Card(
+              const Card(
                 child: ListTile(
                   leading: Icon(Icons.work),
                   title: Text("Work"),
                   subtitle: Text("Flutter Developer"),
                 ),
               ),
-              Card(
+              const Card(
                 child: ListTile(
                   leading: Icon(Icons.favorite),
                   title: Text("Hobbies"),
                   subtitle: Text("Exploring Code, Latest Tech "),
                 ),
               ),
-              Card(
+              const Card(
                 //summary about this project
 
                 child: ListTile(
                   title: Align(
                       alignment: Alignment.center,
                       child: Padding(
-                        padding: const EdgeInsets.all(8.0),
+                        padding: EdgeInsets.all(8.0),
                         child: Text(
                           "About this project",
                         ),
@@ -121,18 +130,17 @@ class AboutMe extends StatelessWidget {
                 //create an elevated button with icon and text
                 child: Padding(
                   padding: const EdgeInsets.all(30.0),
-                  child: Container(
+                  child: SizedBox(
                     height: 70,
                     child: ElevatedButton.icon(
                       onPressed: () {
                         //launch the url: https://github.com/HaseebKahn365/srt_simulato
-                        final Uri _url = Uri.parse(
-                            'https://github.com/HaseebKahn365/srt_simulato');
-                        launch(_url.toString());
+                        launchUrlAny(
+                            "https://github.com/HaseebKahn365/srt_simulato");
                       },
                       //use simple icons
-                      icon: Icon(SimpleIcons.github),
-                      label: Text("Source Code"),
+                      icon: const Icon(SimpleIcons.github),
+                      label: const Text("Source Code"),
                       style: ElevatedButton.styleFrom(
                         elevation: 20,
                         shape: RoundedRectangleBorder(
