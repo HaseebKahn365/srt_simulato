@@ -257,21 +257,34 @@ class _HomeScreenState extends State<HomeScreen> {
                           children: [
                             Text("Active Process:"),
                             Container(
-                              //this is the container for the active process
-                              width: 100,
-                              height: 100,
-                              decoration: BoxDecoration(
-                                border: Border.all(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onSurfaceVariant,
-                                  // Border color
-                                  width: 1.0, // Border width
+                                //this is the container for the active process
+                                width: 100,
+                                height: 100,
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurfaceVariant,
+                                    // Border color
+                                    width: 1.0, // Border width
+                                  ),
+                                  borderRadius: BorderRadius.circular(
+                                      12.0), // Border radius
                                 ),
-                                borderRadius: BorderRadius.circular(
-                                    12.0), // Border radius
-                              ),
-                            )
+                                //here display only the active process
+
+                                child: activeProcesses.isEmpty
+                                    ? Container()
+                                    : Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                              "PID: ${activeProcesses[0].pid}"),
+                                          Text(
+                                              "Burst: ${activeProcesses[0].remainingBurst}"),
+                                        ],
+                                      ))
                           ]),
                     ),
                   ),
@@ -478,7 +491,13 @@ class ActiveProcesses extends StatelessWidget {
   });
 
   @override
+  //list containing processes whose isExecuting is is false
+
   Widget build(BuildContext context) {
+    var nonExecutingProcesses = activeProcesses
+        .where((element) => element.isExecuting == false)
+        .toList()
+        .cast<Process>();
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Container(
@@ -508,7 +527,7 @@ class ActiveProcesses extends StatelessWidget {
                   width: 220,
                   child: ListView.builder(
                     //displaying the list of activeProcesses
-                    itemCount: activeProcesses.length,
+                    itemCount: nonExecutingProcesses.length,
                     scrollDirection: Axis.vertical,
                     itemBuilder: (BuildContext context, int index) {
                       return Padding(
@@ -530,9 +549,9 @@ class ActiveProcesses extends StatelessWidget {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Text("PID: ${activeProcesses[index].pid}"),
+                              Text("PID: ${nonExecutingProcesses[index].pid}"),
                               Text(
-                                  "Burst: ${activeProcesses[index].remainingBurst}"),
+                                  "Burst: ${nonExecutingProcesses[index].remainingBurst}"),
                             ],
                           ),
                         ),
