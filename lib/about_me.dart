@@ -17,12 +17,9 @@ class AboutMe extends StatelessWidget {
         child: Expanded(
           child: ListView(
             children: [
-              //create a circle avatar to display my image
-              const CircleAvatar(
-                radius: 100,
-                backgroundImage: AssetImage(
-                  "assets/images/my.JPG",
-                ),
+              //CREATE A CICULAR CONTAINER WITH MY IMAGE IN A FILL
+              const Padding(
+                padding: EdgeInsets.all(20.0),
               ),
 
               //create a text widget to display my name
