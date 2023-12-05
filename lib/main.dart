@@ -29,7 +29,13 @@ const List<Color> colorOptions = [
   Colors.yellow,
   Colors.orange,
   Colors.pink,
-  Colors.lime
+  Colors.lime,
+  Colors.red,
+  Colors.purple,
+  Colors.brown,
+  Colors.cyan,
+  Colors.indigo,
+  Colors.amber,
 ];
 const List<String> colorText = <String>[
   "M3 Baseline",
@@ -125,6 +131,16 @@ class _HomeScreenState extends State<HomeScreen> {
   Timer? timer;
   Timer? newtimer;
 
+  //create a method that return Color from colorOptions list
+
+  Color lastProcessColor = Colors.transparent;
+
+  Color getColor() {
+    int index = Random().nextInt(colorOptions.length - 1);
+    lastProcessColor = colorOptions[index];
+    return lastProcessColor;
+  }
+
   //run the cpu cycle after every second until the list of active processes is empty using timer and also adjust the positions of the processes after every cycle.
   void runCycle() {
     newtimer = Timer.periodic(Duration(seconds: 1), (t) {
@@ -161,13 +177,12 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('SRT Simulator'),
-        //add an action to toggle the theme
+        //adding an action to toggle the theme
         actions: <Widget>[
-          //add an exclamation icon button that launches the about me page
+          //adding an exclamation icon button that launches the about me page
           IconButton(
             icon: const Icon(Icons.info_outline),
             onPressed: () {
-              //dont use a named route
               // https://github.com/HaseebKahn365/srt_simulato
               launchUrl(
                   Uri.parse('https://github.com/HaseebKahn365/srt_simulato'));
@@ -178,7 +193,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Icon(widget.useLightMode ? Icons.dark_mode : Icons.light_mode),
             onPressed: widget.handleBrightnessChange,
           ),
-          //add an outline action button with text for reset everything. for now it will do nothing
+          //adding an outline action button with text for reset everything. for now it will do nothing
           Container(
             padding: EdgeInsets.only(right: 8),
             height: 30,
@@ -369,10 +384,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   borderRadius: BorderRadius.circular(12.0), // Border radius
                   boxShadow: [
                     BoxShadow(
-                      //display the color of the process if it is not black
+                      //display the color of the last process in the process
                       color: newProcess.processColor == Colors.black
                           ? Colors.transparent
-                          : newProcess.processColor.withOpacity(0.3),
+                          : lastProcessColor.withOpacity(0.3),
                       spreadRadius: 5,
                       blurRadius: 10,
                       offset: Offset(0, 3),
@@ -402,6 +417,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: GestureDetector(
           onLongPressStart: (details) {
             // Start a timer that increments the remainingBurst time of the new process every second.
+
             timer = Timer.periodic(Duration(milliseconds: 180), (t) {
               setState(() {
                 newProcess.remainingBurst++;
@@ -423,8 +439,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 position: 0,
                 pid: 0,
                 //select a random color from the list colorOptions
-                processColor:
-                    colorOptions[Random().nextInt(colorOptions.length - 1)],
+                processColor: getColor(),
                 isExecuting: false,
               );
             });
