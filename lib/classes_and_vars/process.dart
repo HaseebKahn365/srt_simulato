@@ -1,15 +1,22 @@
+import 'package:flutter/material.dart';
+
 class Process {
   int arrival;
   int remainingBurst;
   int position;
   int pid;
   bool isExecuting;
-  Process(
-      {required this.arrival,
-      required this.remainingBurst,
-      required this.position,
-      required this.pid,
-      required this.isExecuting});
+  //| Color = random color; | //this is just a color selected from the list of ColorOptions
+
+  Color processColor;
+  Process({
+    required this.arrival,
+    required this.remainingBurst,
+    required this.position,
+    required this.pid,
+    required this.isExecuting,
+    required this.processColor,
+  });
   void reduceBurst() {
     this.remainingBurst--;
     adjustPositions();
@@ -48,6 +55,7 @@ void createProcess() {
       remainingBurst: 0,
       position: 0,
       pid: processCounter,
+      processColor: Colors.black, //default is black
       isExecuting: false));
   processCounter++;
 }

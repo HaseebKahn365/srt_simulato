@@ -62,6 +62,7 @@ Control flow of the app:
 | Position = 0; because it will will be determined by feedToProcessor(); |
 | Pid = current value of the process\_counter |
 | isExecuting = false; |
+| Color = random color; | //this is just a color selected from the list of ColorOptions
 
 2. After creation of the processes the user can use the add button at the bottom left corner section to call feedToProcessor().
 3. The processes will be displayed using cards whose positions will be adjust after every second.

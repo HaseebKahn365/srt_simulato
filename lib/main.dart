@@ -1,6 +1,7 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:srt_simulato/classes_and_vars/process.dart';
@@ -114,7 +115,12 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   Process newProcess = Process(
-      arrival: 0, remainingBurst: 0, position: 0, pid: 0, isExecuting: false);
+      arrival: 0,
+      remainingBurst: 0,
+      position: 0,
+      pid: 0,
+      isExecuting: false,
+      processColor: Colors.black);
 
   Timer? timer;
   Timer? newtimer;
@@ -229,6 +235,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                 width: 100,
                                 height: 100,
                                 decoration: BoxDecoration(
+                                  color: activeProcesses.isEmpty
+                                      ? Colors.transparent
+                                      : activeProcesses[0]
+                                          .processColor
+                                          .withOpacity(0.3),
                                   border: Border.all(
                                     color: Theme.of(context)
                                         .colorScheme
@@ -307,6 +318,9 @@ class _HomeScreenState extends State<HomeScreen> {
                               width: 100,
                               height: 100,
                               decoration: BoxDecoration(
+                                color: tempCreated[index]
+                                    .processColor
+                                    .withOpacity(0.3),
                                 border: Border.all(
                                   color: Theme.of(context)
                                       .colorScheme
@@ -344,14 +358,26 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Container(
                 height: 130,
                 width: 130,
+
+                //create a rounded border with a glow of the color of the newProcess
                 decoration: BoxDecoration(
                   border: Border.all(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                     // Border color
                     width: 1.0, // Border width
                   ),
-
                   borderRadius: BorderRadius.circular(12.0), // Border radius
+                  boxShadow: [
+                    BoxShadow(
+                      //display the color of the process if it is not black
+                      color: newProcess.processColor == Colors.black
+                          ? Colors.transparent
+                          : newProcess.processColor.withOpacity(0.3),
+                      spreadRadius: 5,
+                      blurRadius: 10,
+                      offset: Offset(0, 3),
+                    ),
+                  ],
                 ),
                 child:
                     //check if the burst is 0 then don't display anything
@@ -360,7 +386,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         : Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Text("PID: ${newProcess.pid}"),
+                              Text("PID: $processCounter"),
                               Text("Burst: ${newProcess.remainingBurst}"),
                             ],
                           ),
@@ -376,7 +402,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: GestureDetector(
           onLongPressStart: (details) {
             // Start a timer that increments the remainingBurst time of the new process every second.
-            timer = Timer.periodic(Duration(milliseconds: 300), (t) {
+            timer = Timer.periodic(Duration(milliseconds: 180), (t) {
               setState(() {
                 newProcess.remainingBurst++;
                 print(newProcess.remainingBurst);
@@ -392,11 +418,15 @@ class _HomeScreenState extends State<HomeScreen> {
               tempCreated.add(newProcess);
               processCounter++;
               newProcess = Process(
-                  arrival: 0,
-                  remainingBurst: 0,
-                  position: 0,
-                  pid: 0,
-                  isExecuting: false);
+                arrival: 0,
+                remainingBurst: 0,
+                position: 0,
+                pid: 0,
+                //select a random color from the list colorOptions
+                processColor:
+                    colorOptions[Random().nextInt(colorOptions.length - 1)],
+                isExecuting: false,
+              );
             });
             print(tempCreated);
           },
@@ -504,6 +534,9 @@ class ActiveProcesses extends StatelessWidget {
                           width: 100,
                           height: 80,
                           decoration: BoxDecoration(
+                            color: nonExecutingProcesses[index]
+                                .processColor
+                                .withOpacity(0.3),
                             border: Border.all(
                               color: Theme.of(context)
                                   .colorScheme
